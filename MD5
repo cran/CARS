@@ -1,0 +1,12 @@
+34dd3bab5a55eeddc8d059f2e6bc20e2 *DESCRIPTION
+4124d4893858fb27c72e75cc09e10653 *LICENSE
+2c4dea329fe32cefd99d0803c6b2f017 *NAMESPACE
+0b34be7a314191b23fe028c928147295 *R/CARS.R
+ec4fb5bd10d05af26e377451d4a93d56 *build/vignette.rds
+bd8c35090a67e60b941f51735d2d8014 *inst/doc/Vignette.R
+6d84d07490aa49ba3a2225c083b39132 *inst/doc/Vignette.Rmd
+f950cd36e66bfcfa2aa2e5be1b23c351 *inst/doc/Vignette.html
+6c15089a56961ecbd9d9e8f55fd90304 *man/CARS.Rd
+3841b8ef7df8cbd088987540749dfcab *man/epsest.func.Rd
+7ca0fb987802054d02da0dc65e69e4cf *man/lin.itp.Rd
+6d84d07490aa49ba3a2225c083b39132 *vignettes/Vignette.Rmd
