@@ -7,7 +7,7 @@
 \alias{CARS}
 \title{The CARS procedure for controlling the false discovery rate}
 \usage{
-CARS(X, Y, alpha, tau = 0.8, variance)
+CARS(X, Y, alpha, tau = 0.9, variance)
 }
 \arguments{
 \item{X}{the first matrix or data frame of observation}
@@ -35,6 +35,6 @@ computing the test statistics, choosing the cutoff and selecting the locations.
 \examples{
 X <- matrix(rnorm(1000),ncol=5,nrow=200);
 Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200);
-CARS(X,Y,0.05,tau=0.8);
+CARS(X,Y,0.05,tau=0.9);
 
 }

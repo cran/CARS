@@ -23,12 +23,12 @@ library(np);
 #' @examples
 #' X <- matrix(rnorm(1000),ncol=5,nrow=200);
 #' Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200);
-#' CARS(X,Y,0.05,tau=0.8);
+#' CARS(X,Y,0.05,tau=0.9);
 #'
 #' @importFrom np npudensbw
-#' @importFrom stats density dt pnorm pt qnorm var
+#' @importFrom stats density dt pnorm pt qnorm var rnorm
 #' @export 
-CARS <- function(X,Y,alpha,tau=0.8,variance){
+CARS <- function(X,Y,alpha,tau=0.9,variance){
 	#Validate input types.
 	if (is.data.frame(X)){
 		X.names=names(X)
@@ -119,15 +119,22 @@ CARS <- function(X,Y,alpha,tau=0.8,variance){
 	   	#Calculate the estimated CARS statistics
 	   	cars.denominator <- np::npudens(~t_1+t_2,bws=bandwidth)$dens;
 
+      #Estimate Correction 
+      sample_null <- rnorm(10000);
+      t_1.den.Est <- density(t_1,bw=hx,from=min(t_1)-10,to=max(t_1)+10,n=1000);
+      sample_lfdr <- (1-t_1.p.Est)*dt(sample_null,deg)/lin.itp(sample_null,t_1.den.Est$x,t_1.den.Est$y);
+      correction <- length(which(sample_lfdr>=tau))/10000;  
+
       t_1.pval <- 2*pnorm(-abs(t_1));
-	   	T.tau <- which(t_1.pval>=tau);
+	   	T.tau <- which(t_1.Lfdr.Est>=tau);
+
 	   	t_2.star.den.Est <- density(t_2[T.tau],bw=ht,from=min(t_2[T.tau])-10,to=max(t_2[T.tau])+10,n=1000);
 	   	t_2.star.den.Est <- lin.itp(t_2,t_2.star.den.Est$x,t_2.star.den.Est$y);
 
-	   	cars.numerator <- dt(t_1,deg)*t_2.star.den.Est/(1-tau);
+	   	cars.numerator <- dt(t_1,deg)*length(T.tau)/m*t_2.star.den.Est/correction;
 
 	   	cars.Est <- cars.numerator/cars.denominator;
-
+      cars.Est[which(cars.Est>=1)] <- 1;
 
 
 
