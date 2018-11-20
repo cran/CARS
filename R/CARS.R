@@ -85,7 +85,7 @@ CARS <- function(X,Y,alpha,tau=0.9,variance){
 
 		#Calculate kappa and pooled variance
 		kappa <- n_y*X.var/(n_x*Y.var);
-		sigma_p <- sqrt(n_y/n*X.var+n_x/n*Y.var);
+		pool.sd <- sqrt(n_y/n*X.var+n_x/n*Y.var);
 
 		#Calculate primary and auxiliary statistics
    		t_1 <- (X.mean-Y.mean)/pool.sd*sqrt(n_x*n_y/n);
@@ -111,7 +111,7 @@ CARS <- function(X,Y,alpha,tau=0.9,variance){
 	   	t_2.Lfdr.Est <- (1-t_2.p.Est)*dt(t_2,n_y-1)/t_2.density.Est;
 	   	t_2.Lfdr.Est[which(t_2.Lfdr.Est>1)] <- 1;
 
-	   	S <- which(t_1.Lfdr.Est<=0.5);
+	   	S <- which(t_1.Lfdr.Est<=0.8);
 	   	bandwidth <- np::npudensbw(~t_1[S]+t_2[S],bwmethod="normal-reference")$bw;
 	   	hx <- bandwidth[1];
 	   	ht <- bandwidth[2];

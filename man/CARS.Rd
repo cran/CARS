@@ -33,8 +33,8 @@ This function runs the CARS procedure, constructing the auxiliary variables,
 computing the test statistics, choosing the cutoff and selecting the locations.
 }
 \examples{
-X <- matrix(rnorm(1000),ncol=5,nrow=200);
-Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200);
+X <- matrix(rnorm(1000),ncol=5,nrow=200,byrow=TRUE);
+Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200,byrow=TRUE);
 CARS(X,Y,0.05,tau=0.9);
 
 }
