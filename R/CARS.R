@@ -14,6 +14,7 @@ library(np);
 #' @param alpha targeted FDR (false discovery rate) level
 #' @param tau the threshold for choosing interesting locations for density estimation, default is 0.5
 #' @param variance for X and Y, default is NULL. If provided, in the form of a m*2 matrix, the columns are representing x and y's variance for each location
+#' @param option sparse case for FDR control or regular for FDR control. Sparse case has more stability when it comes to controlling FDR, power is slightly compromised
 #'
 #' @return A list containing the following components: 
 #' \item{de}{decision for each location (0 or 1)}
@@ -28,7 +29,7 @@ library(np);
 #' @importFrom np npudensbw
 #' @importFrom stats density dt pnorm pt qnorm var rnorm
 #' @export 
-CARS <- function(X,Y,alpha,tau=0.9,variance){
+CARS <- function(X,Y,alpha,tau=0.9,variance,option=c('sparse','regular')){
 	#Validate input types.
 	if (is.data.frame(X)){
 		X.names=names(X)
@@ -91,11 +92,6 @@ CARS <- function(X,Y,alpha,tau=0.9,variance){
    		t_1 <- (X.mean-Y.mean)/pool.sd*sqrt(n_x*n_y/n);
    		t_2 <- (X.mean+kappa*Y.mean)/(sqrt(kappa)*pool.sd)*sqrt(n_x*n_y/n);
 
-   		#Estimate the bandwidths
-   		bandwidth <- npudensbw(~t_1+t_2,bwmethod="normal-reference")$bw;
-   		hx <- bandwidth[1];
-   		ht <- bandwidth[2];
-
    		#Estimate the non-null proportions of primary and auxiliary statistics
    		t_1.p.Est <- epsest.func(t_1,0,1);
    		t_2.p.Est <- epsest.func(t_2,0,1);
@@ -110,22 +106,33 @@ CARS <- function(X,Y,alpha,tau=0.9,variance){
 	   	t_2.density.Est <- lin.itp(t_2,t_2.density.Est$x,t_2.density.Est$y);
 	   	t_2.Lfdr.Est <- (1-t_2.p.Est)*dt(t_2,n_y-1)/t_2.density.Est;
 	   	t_2.Lfdr.Est[which(t_2.Lfdr.Est>1)] <- 1;
+   		
+   		t_1.pval <- 2*pnorm(-abs(t_1));
 
-	   	S <- which(t_1.Lfdr.Est<=0.8);
+	   	S <- which(t_1.pval<=0.5);
 	   	bandwidth <- np::npudensbw(~t_1[S]+t_2[S],bwmethod="normal-reference")$bw;
 	   	hx <- bandwidth[1];
 	   	ht <- bandwidth[2];
-
-	   	#Calculate the estimated CARS statistics
-	   	cars.denominator <- np::npudens(~t_1+t_2,bws=bandwidth)$dens;
-
+      if(option=='regular'){
+	   	  # Calculate the estimated CARS statistics based on bivaraite density estimation for denominator
+	   	  cars.denominator <- np::npudens(~t_1+t_2,bws=bandwidth)$dens;
+      }else if(option=='sparse'){
+        # Calculate the estimated CARS statistics based on decomposed bivariate density estimation for denominator (null + non-null on t_2)
+        t_2.pval <- 2*pnorm(-abs(t_2));
+        S_t2 <- which(t_2.pval<=0.2);
+        screened.den.Est <- density(t_1[S_t2],from=min(t_1[S_t2])-10,to=max(t_2[S_t2])+10,n=1000);
+        screened.den.Est <- lin.itp(t_1,screened.den.Est$x,screened.den.Est$y);
+        #Sparse option, decompose the denominator into two components
+        cars.denominator <- (1-t_2.p.Est)*dnorm(t_2)*dnorm(t_1)+(1-t_2.Lfdr.Est)*t_2.density.Est*screened.den.Est;
+      }
+   		
       #Estimate Correction 
       sample_null <- rnorm(10000);
       t_1.den.Est <- density(t_1,bw=hx,from=min(t_1)-10,to=max(t_1)+10,n=1000);
       sample_lfdr <- (1-t_1.p.Est)*dt(sample_null,deg)/lin.itp(sample_null,t_1.den.Est$x,t_1.den.Est$y);
       correction <- length(which(sample_lfdr>=tau))/10000;  
 
-      t_1.pval <- 2*pnorm(-abs(t_1));
+
 	   	T.tau <- which(t_1.Lfdr.Est>=tau);
 
 	   	t_2.star.den.Est <- density(t_2[T.tau],bw=ht,from=min(t_2[T.tau])-10,to=max(t_2[T.tau])+10,n=1000);

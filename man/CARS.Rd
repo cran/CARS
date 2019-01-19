@@ -4,10 +4,9 @@
 \name{CARS}
 \alias{CARS}
 \alias{CARS-package}
-\alias{CARS}
 \title{The CARS procedure for controlling the false discovery rate}
 \usage{
-CARS(X, Y, alpha, tau = 0.9, variance)
+CARS(X, Y, alpha, tau = 0.9, variance, option = c("sparse", "regular"))
 }
 \arguments{
 \item{X}{the first matrix or data frame of observation}
@@ -19,6 +18,8 @@ CARS(X, Y, alpha, tau = 0.9, variance)
 \item{tau}{the threshold for choosing interesting locations for density estimation, default is 0.5}
 
 \item{variance}{for X and Y, default is NULL. If provided, in the form of a m*2 matrix, the columns are representing x and y's variance for each location}
+
+\item{option}{sparse case for FDR control or regular for FDR control. Sparse case has more stability when it comes to controlling FDR, power is slightly compromised}
 }
 \value{
 A list containing the following components: 
@@ -27,14 +28,12 @@ A list containing the following components:
 \item{th}{threshold for CARS procedure}
 }
 \description{
-The CARS procedure for controlling the false discovery rate
-
 This function runs the CARS procedure, constructing the auxiliary variables,
 computing the test statistics, choosing the cutoff and selecting the locations.
 }
 \examples{
-X <- matrix(rnorm(1000),ncol=5,nrow=200,byrow=TRUE);
-Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200,byrow=TRUE);
-CARS(X,Y,0.05,tau=0.9);
+X <- matrix(rnorm(1000),ncol=5,nrow=200);
+Y <- matrix(rep(c(0,3),c(800,200))+rnorm(1000),ncol=5,nrow=200);
+CARS(X,Y,0.05,tau=0.9,option='regular');
 
 }
